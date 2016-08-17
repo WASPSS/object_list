@@ -9,7 +9,7 @@ objects2d = []
 objects3d = []
 
 def floor_to_dec(value):
-    return floor(value*10)/10
+    return floor(value)
 
 def exist_on_2d_map(object, object_list):
     for i in range(len(object_list)):
@@ -29,18 +29,31 @@ def new_obj_cb(data):
     global april_tags, objects2d, objects3d
     exist = False
     if (data.ID < 100):
-        if not(exist_on_2d_map(data, april_tags)):
+        if exist_on_2d_map(data, april_tags) == False:
             april_tags.append(data.ID)
             print april_tags
     elif (data.ID < 200):
-        if not(exist_on_2d_map(data, objects2d)):
+        if exist_on_2d_map(data, objects2d) == False:
             objects2d.append(data.ID)
             print objects2d
     else:
-        if not(exist_on_3d_map(data, objects3d)):
+        if exist_on_3d_map(data, objects3d) == False:
             objects3d.append([data.ID, data.point.x, data.point.y])
             print objects3d
 
+def shutting_down():
+    global april_tags, objects2d, objects3d
+    file = open('objects.txt', 'w')
+    file.write("April tags \n")
+    for i in range(len(april_tags)):
+        file.write(april_tags[i]+"\n")
+    file.write("2d objects \n")
+    for i in range(len(objects2d)):
+        file.write(objects2d[i]+"\n")
+    file.write("3d objects \n")
+    for i in range(len(objects3d)):
+        file.write(str(objects3d[i][0])+" "+str(objects3d[i][1])+" "+str(objects3d[i][2])+" "+"\n")
+    file.close()
 
 # Intializes everything
 def start():
@@ -49,6 +62,7 @@ def start():
     rospy.init_node('object_list')
     # subscribed to joystick inputs on topic "joy"
     rospy.Subscriber("/object_location", object_loc , new_obj_cb)
+    rospy.on_shutdown(shutting_down)
     rospy.spin()
 
 
